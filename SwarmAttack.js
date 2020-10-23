@@ -92,11 +92,6 @@ class BeeHive{
 						}
 						verbose(`${this.id}Bee${bee.attr.id} Attacking ${victimHive.id}Bee${victimBee.attr.id}`);
 						bee.attack(victimBee, victimHive);
-						try{
-							await attackGraphic(this, bee, victimBee, victimHive);
-						}catch{
-							
-						}
 					}
 				}else{
 					this.endWar();

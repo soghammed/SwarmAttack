@@ -84,26 +84,12 @@ const initBeeGraphics = async () => {
 		// beeObj.draw();
 }
 
-const attackGraphic = (attackerBeeHive, attacker, victim, victimBeeHive) => {
-	let attackerId = `${attackerBeeHive.id}bee${attacker.attr.id}`;
-	let victimId = `${victimBeeHive.id}bee${victim.attr.id}`;
-	let attackerEl = document.querySelector(`#${attackerId}`);
-	let victimEl = document.querySelector(`#${victimId}`);
-	// attackerEl.classList.add('attack');
-	// victimEl.classList.add('attack');
-	// console.log(attackerEl.style.position);
-	// setTimeout( () => {
-	// 	attackerEl.classList.remove('attack');
-	// 	victimEl.classList.remove('attack');
-	// }, 1000);
-	// let attackerCurrentPosition = {
-	// 	top: attackerId.offsetTop,
-	// 	left: attackerId.offsetLeft
-	// }
-	// console.log(attackerCurrentPosition);
-	// let bee = 
-	// let victimCurrentPosition = victimEl
-}
+// const attackGraphic = (attackerBeeHive, attacker, victim, victimBeeHive) => {
+// 	let attackerId = `${attackerBeeHive.id}bee${attacker.attr.id}`;
+// 	let victimId = `${victimBeeHive.id}bee${victim.attr.id}`;
+// 	let attackerEl = document.querySelector(`#${attackerId}`);
+// 	let victimEl = document.querySelector(`#${victimId}`);
+// }
 
 function beeGraphic(x, y){
 	this.x = x;
