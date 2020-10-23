@@ -1,145 +1,154 @@
 const randomNumber = (max, min) => {
 	return Math.floor(Math.random() * (max - min)) + min;
 }
-class BeeHive {
-	constructor(queen = null, workers = null, warriors = null){
-		this.queen = queen == null ? new Queen() : queen;
-		this.workers = workers == null ? new Workers(randomNumber(10,15)) : workers;
-		this.warriors = warriors == null ? new Warriors(randomNumber(10,15)) : warriors;
-		this.bees = [
-			this.queen,
-			this.workers.workers,
-			this.warriors.warriors
-		];
+const verbose = (text) => {
+	console.log(`[] ${text}`);
+} 
+const graphicVerbose = (text) => {
+	try{
+		document.querySelector('.commentary').innerHTML = `${text}`;
+	}catch{
+
+	}
+}
+class Bee{
+	constructor(type){
+		switch(type)
+		{
+			case 'queen':
+				this.attr = {
+					type:type,
+					health: 50,
+					damage: 1
+				}
+				break;
+			case 'worker':
+				this.attr = {
+					type:type,
+					health: 5,
+					damage: [2,3,4]
+				}
+				break;
+
+			case 'warrior':
+				this.attr = {
+					type:type,
+					health:10,
+					damage:[4,5,6,7]
+				}
+				break;
+		}
 	}
 
-	beeType(index){
-		return index === 0 ? 'Queen': index === 1 ? 'Worker': index === 2 ? 'Warrior':null;
-	}
-
-	attack(victimHive){
-		let attacker,victimBee,attackerType,victimBeeType;
-		victimBee = this.chooseBee(victimHive);
-
-		//queen attack
-		attackerType = 'Queen';
-		attacker = this.bees[0];
-		victimBee.id = victimBee.id ? victimBee.id : 'Queen';
-		victimBee.health-=attacker.damage;
-		this.verbose(`${attackerType} attacks ${victimBee.type ? victimBee.type : 'Queen'} BeeID:${victimBee.id}`);
-
-
-		//workers attack
-		this.bees[1].map( (bee, index) => {
-			attacker = bee;
-			victimBee = this.chooseBee(victimHive);
-			victimBee.id = victimBee.id ? victimBee.id : 'Queen';
-			victimBee.health-=attacker.damage[randomNumber(0,3)];
-			this.verbose(`${attacker.type}BeeID:${attacker.id} attacks ${victimBee.type ? victimBee.type : 'Queen'} BeeID:${victimBee.id}`);
-		});
-
-		//warriors attack
-		this.bees[2].map( (bee, index) => {
-			attacker = bee;
-			victimBee = this.chooseBee(victimHive);
-			victimBee.id = victimBee.id ? victimBee.id : 'Queen';
-			victimBee.health-=attacker.damage[randomNumber(0,3)];
-			this.verbose(`${attacker.type}BeeID:${attacker.id} attacks ${victimBee.type ? victimBee.type : 'Queen'} BeeID:${victimBee.id}`);
-		});
-	}
-
-	verbose(text){
-		console.log(text);
-	}
-
-	chooseBee(hive){
-		let beeType = randomNumber(0,3);
-		if(beeType === 0){
-			return hive.bees[beeType];
+	attack(victimBee, victimHive){
+		if(this.attr.type != 'queen'){
+			victimBee.attr.health-=this.attr.damage[randomNumber(0,this.attr.damage.length)];
 		}else{
-			return hive.bees[beeType][randomNumber(0, hive.bees[beeType].length)];
+			victimBee.attr.health-=this.attr.damage;
 		}
-	}
-
-
-}
-
-class Queen{
-	constructor(){
-		this.health = 50;
-		this.damage = 1;
-	}
-}
-
-class Workers{
-	constructor(amount){
-		this.workers = [];
-		for(let i = 1; i <= amount; i++)
-		{
-			let attr = {
-				id:i,
-				health:5,
-				damage:[2,3,4],
-				type: 'Worker'
-			}
-			this.workers.push(attr);
+		if(victimBee.attr.type === 'queen'){
+			verbose(`***************************`);
+			verbose(`${victimHive.id} BeeHive Queen is attacked`);
+			verbose(`${victimHive.id} BeeHive Queen Health: ${victimBee.attr.health}`);
+			verbose(`***************************`);
 		}
 	}
 }
 
-class Warriors{
-	constructor(amount)
-	{	this.warriors = [];
-		for(let i = 1; i <= amount; i++)
-		{
-			let attr = {
-				id:i,
-				health:10,
-				damage:[4,5,6,7],
-				type: 'Warrior'
-			}
-			this.warriors.push(attr);
+class BeeHive{
+	constructor(id){
+		let queen = [new Bee('queen')];
+		let workers = [];
+		let warriors = []
+		for(var i = 0; i < randomNumber(15,20); i++){
+			workers.push(new Bee('worker'));
+		}
+		for(var i = 0; i < randomNumber(10,15); i++){
+			warriors.push(new Bee('warrior'));
+		};
+		this.bees = queen.concat(workers, warriors);
+		this.id = id;
+		this.attackStopped = 0;
+		//assign id for each bee
+		this.bees.map( (bee, index) => {
+			bee.attr.id = index;
+		})
+		// initBeeGraphics(this);
+	}
+	attack(victimHive){
+		let checkIfEitherQueenIsDead = () => {
+		    return victimHive.bees[0].attr.health <= 0 || this.bees[0].attr.health <= 0 ? true : false;
+		}
+		let victimBee;
+		if(!checkIfEitherQueenIsDead()){
+			verbose(`--------- ${this.id} BeeHive to Attack ${this.bees.length} times ---------\n`);
+			this.bees.map( async (bee,index) => {
+				if(!checkIfEitherQueenIsDead()){
+					victimBee = this.chooseVictimBee(victimHive);
+					if(victimBee){
+						//if bee exists check still alive otherwise re select bee;
+						while(victimBee.attr.health <= 0){
+							victimBee = this.chooseVictimBee(victimHive);
+						}
+						verbose(`${this.id}Bee${bee.attr.id} Attacking ${victimHive.id}Bee${victimBee.attr.id}`);
+						bee.attack(victimBee, victimHive);
+						try{
+							await attackGraphic(this, bee, victimBee, victimHive);
+						}catch{
+							
+						}
+					}
+				}else{
+					this.endWar();
+					this.attackStopped = 1;
+					return;
+				}
+			});
+		}
+		verbose(`\n`);
+	}
+
+	endWar(){
+		if(!this.attackStopped){
+			graphicVerbose(`-------------- Winner: ${this.id} BeeHive! --------------`);
+			verbose('QUEEN IS DEAD!');
+			verbose(`\n-------------- Winner: ${this.id} BeeHive! --------------`)
+			clearInterval(warInterval);
+			// clearGraphics();
+		}
+	}
+
+	chooseVictimBee(victimHive){
+		let beeIndex = randomNumber(0, victimHive.bees.length);
+		// console.log('victimbeeIndex', beeIndex, victimHive.bees[beeIndex].attr.health);
+		if(victimHive.bees[0].attr.health > 0){
+			// verbose(`queen health ${victimHive.bees[0].attr.health}`);
+			return victimHive.bees[beeIndex];
+		}else{
+			return 'Queen Dead'
 		}
 	}
 }
 
 const startWar = (b1, b2) => {
-
-	b1.verbose('----------- War Begins! -----------');
+	verbose(`-------------- War: ${b1.id} vs ${b2.id} Begins! --------------\n`);
+	graphicVerbose(`-------------- War: ${b1.id} vs ${b2.id} Begins! --------------\n`);
 	warInterval = setInterval(() => {
 		let date = new Date();
 		let time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 		let updateText = `[tick:${time}]`;
-
-		// ShowText(updateText);
 		LaunchAttack(b1, b2);
-		checkIfQueenIsDead();
 
-	}, 1000);
+	}, 2000);
 }
 
 const LaunchAttack = (b1, b2) => {
-	checkIfQueenIsDead = () => {
-		if(b1.bees[0].health <= 0){
-			b1.verbose('BeeHive 1 Queen is DEAD, The winner is Beehive2');
-			b1.verbose('----------- War Ends! -----------');
-			clearInterval(warInterval);
-		}else if(b2.bees[0].health <= 0){
-			b2.verbose('BeeHive 2 Queen is DEAD, The winner is Beehive1');
-			b1.verbose('----------- War Ends! -----------');
-			clearInterval(warInterval);
-		}else{
-			b1.verbose(`BeeHive1 Queen Health: ${b1.bees[0].health} && BeeHive2 Queen Health: ${b2.bees[0].health} After attack`);
-			b1.verbose('');
-			b1.verbose('');
-		}
-	}
-
 	b1.attack(b2);
 	b2.attack(b1);
 }
 
-let b1 = new BeeHive();
-let b2 = new BeeHive();
+let b1 = new BeeHive('b1');
+let b2 = new BeeHive('b2');
+
 let warInterval;
 startWar(b1, b2);
