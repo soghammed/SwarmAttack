@@ -46,6 +46,15 @@ class Bee{
 		}else{
 			victimBee.attr.health-=this.attr.damage;
 		}
+		//graphic attack
+		let victimBeeHiveIndex = parseInt(victimHive.id.replace( /^\D+/g, '')) - 1;
+		let victimBeeGraphic = bees[victimBeeHiveIndex][victimBee.attr.id];
+		let attackerBeeGraphic = bees[victimBeeHiveIndex === 0 ? 1 : 0][this.attr.id];
+		// console.log('Attacker', attackerBeeGraphic, 'Victim', victimBeeGraphic);
+		// attackerBeeGraphic.attack(victimBeeGraphic);
+		attackerBeeGraphic.setVictim(victimBeeGraphic);
+		// attackerBeeGraphic.x = victimBeeGraphic.x;
+		// attackerBeeGraphic.y = victimBeeGraphic.y;
 		if(victimBee.attr.type === 'queen'){
 			verbose(`***************************`);
 			verbose(`${victimHive.id} BeeHive Queen is attacked`);
@@ -95,7 +104,6 @@ class BeeHive{
 					}
 				}else{
 					this.endWar();
-					this.attackStopped = 1;
 					return;
 				}
 			});
@@ -109,6 +117,7 @@ class BeeHive{
 			verbose('QUEEN IS DEAD!');
 			verbose(`\n-------------- Winner: ${this.id} BeeHive! --------------`)
 			clearInterval(warInterval);
+			this.attackStopped = 1;
 			// clearGraphics();
 		}
 	}

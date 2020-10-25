@@ -11,7 +11,9 @@ let beehiveArr = [b1, b2];
 let width = c.width;
 let height = c.height;
 let d = c.getContext('2d');
+
 let bees = [];
+let sim = 1;
 const initBeeGraphics = async () => {
 	// let beehiveElement = document.querySelector(`.${beehive.id}`);
 	//black
@@ -39,7 +41,7 @@ const initBeeGraphics = async () => {
 			bees[index][i].id = `${beehive.id}bee${beehive.bees[i].attr.id}`;
 			bees[index][i].health = beehive.bees[i].attr.health;
 		}
-		// console.log(bees);
+		console.log(bees);
 	})
 
 	// let beeElements = beehive.bees.map( beeObject => {
@@ -95,6 +97,8 @@ function beeGraphic(x, y){
 	this.x = x;
 	this.y = y;
 	this.active = 1;
+	this.attacking = 0;
+	this.victim = null;
 	// this.x = randomNumber(3, 300);
 	// this.y = randomNumber(3, 100);
 }
@@ -103,25 +107,44 @@ beeGraphic.prototype.draw = function(){
 
 	d.lineWidth = 1;
 	d.strokeStyle = 'black';
-	circle(this.x,this.y, 3, true);
+	circle(this.x,this.y, 3, true, this.active ? 1 : 0.2);
 }
 beeGraphic.prototype.collision = function(){
 	if(this.x > width){
-	 this.x = width;
+	 this.x = width - 5;
 	}
 	 if(this.x < 0){
-	 this.x = 0;
+	 this.x = 5;
 	}
 	if(this.y > height){
-	 this.y = height;
+	 this.y = height - 5;
 	}
 	if(this.y < 0){
-	 this.y = 0;
+	 this.y = 5;
 	}
 }
 
-beeGraphic.prototype.attack = function(attacker, victim){
-	console.log('attack', attacker.id, victim.id);
+beeGraphic.prototype.setVictim = function(victim){
+	this.victim = victim;
+	console.log('setVictim', this.victim, this);
+}
+beeGraphic.prototype.attack = function(){
+	// console.log(this.victim);
+	if(this.victim != null && this.active){
+		let oldx = this.x;
+		let oldy = this.y;
+		// console.log('victimooooooooooooo', this.victim);
+		this.x = this.victim.x
+		this.y = this.victim.y;
+		// setTimeout( () => {
+		// 	this.x = oldx;
+		// 	this.y = oldy;
+		// }, 1000);
+
+	}else{
+		// console.log('ok.......', this.victim);
+	}
+	// console.log('attack', attacker.id, victim.id
 }
 
 beeGraphic.prototype.buzz = function(){
@@ -130,10 +153,11 @@ beeGraphic.prototype.buzz = function(){
 	this.x += offsetx;
 	this.y += offsety;
 }
-const circle = (x, y, radius, fillCircle) =>{
+const circle = (x, y, radius, fillCircle, alpha = 1) =>{
 
   d.beginPath();
   d.arc(x, y, radius+3, 0, Math.PI * 2, false);
+  d.globalAlpha = alpha;
   if(fillCircle){
     d.fill();
   } else{
@@ -143,6 +167,7 @@ const circle = (x, y, radius, fillCircle) =>{
   d.beginPath();
   d.arc(x+4.5,y-5, radius, 0, Math.PI * 2, false);
   // fillCircle= true;
+  d.globalAlpha = alpha;
   d.fillStyle = 'black';
   if(fillCircle){
     d.fill();
@@ -150,13 +175,16 @@ const circle = (x, y, radius, fillCircle) =>{
     d.stroke();
   }
 
+
   d.beginPath();
   d.arc(x-4.5,y-5, radius, 0, Math.PI * 2, false);
+  d.globalAlpha = alpha;
   if(fillCircle){
     d.fill();
   } else{
     d.stroke();
   }
+
 };  
 
 clearGraphics = () => {
@@ -166,6 +194,9 @@ clearGraphics = () => {
 initBeeGraphics();
 let canvasInterval = setInterval(() => {
 	d.clearRect(0,0,width,height);
+	d.globalAlpha = 1;
+	d.fillStyle = "#2d2d2d";
+	d.fillRect(0, 0, c.width, c.height)
 	for(let i = 0; i < bees.length; i++)
 	{
 		bees[i].map( (beeG,index) => {
@@ -173,21 +204,29 @@ let canvasInterval = setInterval(() => {
 				beeG.active = 0;
 			}
 				if(index === 0){
-					d.fillStyle = 'red';
+					if(i === 0){
+						d.fillStyle = 'brown';
+					}else{
+						d.fillStyle = 'purple';
+					}
 				}else if(i === 0){
-					d.fillStyle = 'orange';
+					d.fillStyle = 'blue';
 				}else{
-					d.fillStyle = 'lightgrey';
+					d.fillStyle = 'green';
 				}
-				d.font = '8px verdana';
+				d.font = '6px verdana';
 				beeG.draw();
-				d.fillText(`${i === 0 ? b1.bees[index].attr.health <= 0 ? '' : b1.bees[index].attr.health : b2.bees[index].attr.health <= 0 ? '' : b2.bees[index].attr.health}`, beeG.x-4.5, beeG.y+13);
+				d.fillStyle = 'white';
+				d.fillText(`+${i === 0 ? b1.bees[index].attr.health <= 0 ? '' : b1.bees[index].attr.health : b2.bees[index].attr.health <= 0 ? '' : b2.bees[index].attr.health}`, beeG.x-4.5, beeG.y-10);
 				d.font = '7px verdana';
 				d.fillText(`${index === 0 ? `${beeG.beehiveID}`: index}`, beeG.x-3.5, beeG.y+4);
 				beeG.collision();	
 				if(beeG.active){
+					if(beeG.victim !=null && beeG.victim.active){
+						beeG.attack();
+					}
 					beeG.buzz();
 				}
 		})
 	}
-}, 50);
+}, 60);
