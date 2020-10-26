@@ -1,7 +1,11 @@
 ## instructions
 
 Requirments:
-Node.js to run script in terminal;
+- Node.js
 
-Graphic:
-graphic.html
+Command:
+```
+node SwarmAttack.js
+```
+
+Or Graphic: graphic.html
