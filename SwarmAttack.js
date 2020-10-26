@@ -6,13 +6,14 @@ const randomNumber = (max, min) => {
 }
 const verbose = (text) => {
 	console.log(`[] ${text}`);
+	if(env === 'browser'){
+		graphicVerbose(text);
+	}
 } 
 const graphicVerbose = (text) => {
-	try{
-		document.querySelector('.commentary').innerHTML = `${text}`;
-	}catch{
-
-	}
+	let commentaryBox = document.querySelector('#commentary')
+	commentaryBox.innerHTML += `<br>${text}`;
+	commentaryBox.scrollTop = commentaryBox.scrollHeight;
 }
 const circle = (d, x, y, radius, fillCircle, alpha = 1) =>{
 
@@ -90,7 +91,7 @@ class Bee{
 		d.strokeStyle = 'black';
 		circle(d, this.x,this.y, 3, true, this.active ? 1 : 0.2);
 	}
-	collision(width, height){
+	boundaries(width, height){
 		if(this.x >= width){
 		 this.x = width - 10;
 		}
@@ -191,7 +192,9 @@ class BeeHive{
 		if(!checkIfEitherQueenIsDead()){
 			verbose(`\n--------- ${this.id} BeeHive to Attack ${this.bees.length} times ---------\n`);
 			this.bees.map( (bee,index) => {
+				//each bee attacks if queen isnt dead
 				if(!checkIfEitherQueenIsDead()){
+					//select victim
 					victimBee = this.chooseVictimBee(victimHive);
 					if(victimBee){
 						//if bee exists check still alive otherwise re select bee;
@@ -211,9 +214,9 @@ class BeeHive{
 
 	endWar(){
 		if(!this.attackStopped){
-			graphicVerbose(`-------------- Winner: ${this.id} BeeHive! --------------`);
 			verbose('QUEEN IS DEAD!');
 			verbose(`\n-------------- Winner: ${this.id} BeeHive! --------------`)
+			document.querySelector('.title').innerHTML = `-------------- Winner: ${this.id} BeeHive! --------------`;
 			clearInterval(warInterval);
 			this.attackStopped = 1;
 			// clearGraphics();
@@ -264,12 +267,12 @@ const startGraphic =  (b1, b2) => {
 					d.fillStyle = 'green';
 				}
 				d.font = '6px verdana';
-				bee.collision(width, height);
+				bee.boundaries(width, height);
 				//draw bee
 				bee.draw(d);
 				d.fillStyle = 'white';
 				//add health
-				d.fillText(`+${i === 0 ? b1.bees[index].attr.health <= 0 ? '' : b1.bees[index].attr.health : b2.bees[index].attr.health <= 0 ? '' : b2.bees[index].attr.health}`, bee.x-4.5, bee.y-10);
+				d.fillText(`+${i === 0 ? b1.bees[index].attr.health <= 0 ? 0 : b1.bees[index].attr.health : b2.bees[index].attr.health <= 0 ? '' : b2.bees[index].attr.health}`, bee.x-4.5, bee.y-10);
 				d.font = '7px verdana';
 				//add bee id
 				d.fillText(`${index === 0 ? `${beehiveArr[i].id}`: index}`, bee.x-3.5, bee.y+4);
@@ -287,7 +290,6 @@ const startGraphic =  (b1, b2) => {
 
 const startWar = (b1, b2) => {
 	verbose(`-------------- War: ${b1.id} vs ${b2.id} Begins! --------------\n`);
-	graphicVerbose(`-------------- War: ${b1.id} vs ${b2.id} Begins! --------------\n`);
 	if(env === 'browser'){
 		startGraphic(b1, b2);
 	}
