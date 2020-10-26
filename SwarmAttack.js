@@ -216,7 +216,9 @@ class BeeHive{
 		if(!this.attackStopped){
 			verbose('QUEEN IS DEAD!');
 			verbose(`\n-------------- Winner: ${this.id} BeeHive! --------------`)
-			document.querySelector('.title').innerHTML = `-------------- Winner: ${this.id} BeeHive! --------------`;
+			if(c === 'browser'){
+				document.querySelector('.title').innerHTML = `-------------- Winner: ${this.id} BeeHive! --------------`;
+			}
 			clearInterval(warInterval);
 			this.attackStopped = 1;
 			// clearGraphics();
