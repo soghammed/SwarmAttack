@@ -1,6 +1,6 @@
 ## instructions
 
-Requirments:
+Terminal Requirments:
 - Node.js
 
 Command:
